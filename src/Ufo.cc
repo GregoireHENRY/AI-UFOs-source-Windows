@@ -26,6 +26,17 @@ void Ufo::setup()
 
     }
     if (id) pos.y=5500;
+    spawn=pos;
+    mag=0;
+    aim={5000,4000};
+    motorposleft=pos+rotate(vdir(pos-aim),-0.5)*size*1.1f;
+    motorposright=pos+rotate(vdir(pos-aim),0.5)*size*1.1f;
+    motorleft=create_circ(gfx.side+motorposleft,motorsize,
+                          sf::Color(240,30,20,mag*2.2),
+                          sf::Color(150,50,30,mag*1.5),15);
+    motorright=create_circ(gfx.side+motorposright,motorsize,
+                           sf::Color(240,30,20,mag*2.2),
+                           sf::Color(150,50,30,mag*1.5),15);
     shape=create_circ(gfx.side+pos,size,color);
 }
 
@@ -40,12 +51,12 @@ void Ufo::setData(float dt, float _mag, float aimx, float aimy)
 {
     mag=_mag;
     aim={aimx,aimy};
-    aim=aim;
     clip(mag,0.f,100.f);
-    mag*=gfx.pxfac;
-    acc=vdir(aim-pos)*mag;
+    acc=vdir(aim-pos)*mag*gfx.pxfac;
     vel=gfx.friction*vel+acc*dt;
     pos=pos+vel*dt;
+    motorposleft=pos+rotate(vdir(pos-aim),-0.5)*size*1.1f;
+    motorposright=pos+rotate(vdir(pos-aim),0.5)*size*1.1f;
     collided=false;
     collwall();
     collflag();
@@ -55,6 +66,14 @@ void Ufo::setData(float dt, float _mag, float aimx, float aimy)
 void Ufo::draw(sf::RenderWindow &window)
 {
     shape.setPosition(gfx.side+pos-sc2vc(size));
+    motorleft.setPosition(gfx.side+motorposleft-sc2vc(motorsize));
+    motorright.setPosition(gfx.side+motorposright-sc2vc(motorsize));
+    motorleft.setFillColor(sf::Color(240,30,20,mag*2.2));
+    motorright.setFillColor(sf::Color(240,30,20,mag*2.2));
+    motorleft.setOutlineColor(sf::Color(150,50,30,mag*1.5));
+    motorright.setOutlineColor(sf::Color(150,50,30,mag*1.5));
+    window.draw(motorleft);
+    window.draw(motorright);
     window.draw(shape);
 }
 
@@ -92,11 +111,11 @@ void Ufo::collufos(Ufo *othufo)
     if (norm(r)<2*size) {
         // Detection flag owner tackling
         if (team != othufo->team) {
-            if (owning && norm(vel) < norm(othufo->vel)) {
+            if (owning && norm(vel) <= norm(othufo->vel)) {
                 owning=false;
                 enemy_flag->spawn();
             }
-            else if (othufo->owning && norm(vel) > norm(othufo->vel)) {
+            else if (othufo->owning && norm(vel) >= norm(othufo->vel)) {
                 othufo->owning=false;
                 flag->spawn();
             }

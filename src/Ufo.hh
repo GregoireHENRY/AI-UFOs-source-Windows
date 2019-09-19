@@ -16,9 +16,10 @@ class Ufo
 public:
     bool collided, owning;
     int team, id;
-    float size=350, mag, flag_rot_speed=0.1f;
-    sf::Vector2f pos, vel, acc, aim, field, flag_rot;
-    sf::CircleShape shape;
+    float size=350, mag, flag_rot_speed=0.1f, motorsize=40;
+    sf::Vector2f pos, vel, acc, aim, field, flag_rot, motorposleft,
+                 motorposright, spawn;
+    sf::CircleShape shape, motorleft, motorright;
     sf::Color color;
     sf::Text *name, *score;
     Graphics gfx;
