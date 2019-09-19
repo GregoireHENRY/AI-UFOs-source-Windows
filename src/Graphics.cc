@@ -6,12 +6,11 @@
 Graphics::Graphics ()
     {
         fps=60;
-        pxfac=3e-2;
-        friction=0.98;
-        restwall=1.0;
+        pxfac=40;
+        friction=0.995;
+        restwall=1.1;
         restufo=0.45;
-        repulwall=0;
-        repulufo=300;
+        repulufo=350;
         can={19200,10800};
         board={10000,8000};
         base={1000,board.y};

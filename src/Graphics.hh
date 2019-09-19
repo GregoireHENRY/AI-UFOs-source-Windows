@@ -13,7 +13,6 @@ public:
   float friction;
   float restwall;
   float restufo;
-  float repulwall;
   float repulufo;
   sf::Vector2f can;
   sf::Vector2f board;

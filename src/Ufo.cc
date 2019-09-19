@@ -40,9 +40,10 @@ void Ufo::setData(float dt, float _mag, float aimx, float aimy)
 {
     mag=_mag;
     aim={aimx,aimy};
+    aim=aim;
     clip(mag,0.f,100.f);
     mag*=gfx.pxfac;
-    acc=(aim-pos)*mag;
+    acc=vdir(aim-pos)*mag;
     vel=gfx.friction*vel+acc*dt;
     pos=pos+vel*dt;
     collided=false;
@@ -75,7 +76,6 @@ void Ufo::collwall()
     if (coll) {
         ang=angvec2(vel,nvec);
         vel=rotate(vel,fac*2*ang)*gfx.restwall;
-        vel=(norm(vel)+gfx.repulwall)*vdir(vel);
     }
 }
 
@@ -102,9 +102,9 @@ void Ufo::collufos(Ufo *othufo)
             }
         }
         // Apply collision
-        float nv1=norm(vel), nv2=norm(othufo->vel);
-        vel=-(gfx.restufo*nv2+gfx.repulufo)*vdir(r);
-        othufo->vel=(gfx.restufo*nv1+gfx.repulufo)*vdir(r);
+        sf::Vector2f v1=vel, v2=othufo->vel;
+        vel=gfx.restufo*norm(v2)*vdir(v2) - gfx.repulufo*vdir(r);
+        othufo->vel=gfx.restufo*norm(v1)*vdir(v1) + gfx.repulufo*vdir(r);
         othufo->collided=true;
     }
 }
