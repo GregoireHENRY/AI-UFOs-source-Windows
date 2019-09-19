@@ -16,7 +16,7 @@ class Flag
 public:
     bool owned;
     int team, score;
-    float size=100, posx;
+    float size=75.f, posx;
     sf::Vector2f pos, given_pos;
     sf::RectangleShape shape;
     sf::Color color;

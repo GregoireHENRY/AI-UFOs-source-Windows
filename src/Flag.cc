@@ -34,7 +34,7 @@ void Flag::spawn()
 {
     owned=false;
     pos.x=posx;
-    pos.y=100*(10+(std::rand()%70));
+    pos.y=100*(10+(std::rand()%60));
     given_pos=pos;
 }
 

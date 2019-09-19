@@ -2,13 +2,23 @@
 #include <SFML/OpenGL.hpp>
 #include <iostream>
 #include <string>
-#include "Tools.hh"
-#include "Sfmltools.hh"
+#include "tools.hh"
+#include "sfmltools.hh"
 #include "Graphics.hh"
 #include "Ufo.hh"
 #include "Flag.hh"
-#include "User.hh"
-#include "Bot.hh"
+#include "user.hh"
+#include "bot.hh"
+
+void set_countdown(sf::Text &text, float roundtime, float currtime)
+{
+    float countdowntime = roundtime-currtime;
+    int minutes = (int)countdowntime/60;
+    int seconds = (int)countdowntime%60;
+    char countdownstr[10];
+    sprintf(countdownstr, "%02d:%02d", minutes, seconds);
+    text.setString(countdownstr);
+}
 
 int main()
 {
@@ -18,7 +28,8 @@ int main()
     Graphics gfx=Graphics();
     sf::RenderWindow window(sf::VideoMode(gfx.can.x,gfx.can.y),"Ufo",
                             sf::Style::Fullscreen,sf::ContextSettings(24,8,4,3,0));
-    window.setVerticalSyncEnabled(true); //window.setFramerateLimit(gfx.fps);
+    // window.setFramerateLimit(gfx.fps);
+    window.setVerticalSyncEnabled(true);
     window.setView(sf::View(sf::FloatRect(0,0,gfx.can.x,gfx.can.y)));
     window.clear(sf::Color(4,60,60));
 
@@ -37,7 +48,8 @@ int main()
         create_text(gfx.name1,names[rng],500,gfx.font1),
         create_text(gfx.name2,names[rng2],500,gfx.font1),
         create_text(gfx.score1,"0",300,gfx.font1),
-        create_text(gfx.score2,"0",300,gfx.font1)
+        create_text(gfx.score2,"0",300,gfx.font1),
+        create_text(gfx.countdown,"00:00",300,gfx.font1)
     };
 
     // Ufos creation
@@ -61,33 +73,43 @@ int main()
     }
 
     // Main loop
+    bool gameloop=true;
     std::vector<float> usermotor, botmotor;
     sf::Clock clk;
-    float dt;
+    float dt, roundtime=1*60, currtime=0;
     while (window.isOpen()) {
         dt=clk.restart().asSeconds();
+        currtime+=dt;
         sf::Event event;
-        while (window.pollEvent(event)) if (event.type == sf::Event::Closed) window.close();
+        while (window.pollEvent(event))
+            if (event.type == sf::Event::Closed) window.close();
         // Get motor engine force magnitudes and directions from user and bot
         // and compute new positions, detect collisions with walls, between
         // ufos and capture flags
-        usermotor=user::main(user[0]->flag->getData(),
-                             user[0]->enemy_flag->getData(),
-                             user[0]->getData(),user[1]->getData(),
-                             bot[0]->getData(),bot[1]->getData());
-        botmotor=bot::main(bot[0]->flag->getData(),
-                           bot[0]->enemy_flag->getData(),
-                           bot[0]->getData(),bot[1]->getData(),
-                           user[0]->getData(),user[1]->getData());
-        user[0]->setData(dt,usermotor[0],usermotor[1],usermotor[2]);
-        user[1]->setData(dt,usermotor[3],usermotor[4],usermotor[5]);
-        bot[0]->setData(dt,botmotor[0],botmotor[1],botmotor[2]);
-        bot[1]->setData(dt,botmotor[3],botmotor[4],botmotor[5]);
-        for (int ii=0; ii<4; ii++)
-            for (int jj=0; jj<4; jj++)
-                if (ii!=jj) ufos[ii].collufos(&ufos[jj]);
-        flags[0].setData();
-        flags[1].setData();
+        if (gameloop) {
+            if (currtime > roundtime) {
+                gameloop=false;
+                continue;
+            }
+            set_countdown(texts[4], roundtime, currtime);
+            usermotor=user::main(user[0]->flag->getData(),
+                                 user[0]->enemy_flag->getData(),
+                                 user[0]->getData(),user[1]->getData(),
+                                 bot[0]->getData(),bot[1]->getData());
+            botmotor=bot::main(bot[0]->flag->getData(),
+                               bot[0]->enemy_flag->getData(),
+                               bot[0]->getData(),bot[1]->getData(),
+                               user[0]->getData(),user[1]->getData());
+            user[0]->setData(dt,usermotor[0],usermotor[1],usermotor[2]);
+            user[1]->setData(dt,usermotor[3],usermotor[4],usermotor[5]);
+            bot[0]->setData(dt,botmotor[0],botmotor[1],botmotor[2]);
+            bot[1]->setData(dt,botmotor[3],botmotor[4],botmotor[5]);
+            for (int ii=0; ii<4; ii++)
+                for (int jj=0; jj<4; jj++)
+                    if (ii!=jj) ufos[ii].collufos(&ufos[jj]);
+            flags[0].setData();
+            flags[1].setData();
+        }
 
         // Clear, draw & display
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

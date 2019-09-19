@@ -72,7 +72,11 @@ void Ufo::collwall()
     if (pos.x-size<0)           {nvec=gfx.nvect; fac= 1; coll=true;}
     if (pos.y+size>gfx.board.y) {nvec=gfx.nhorz; fac=-1; coll=true;}
     if (pos.y-size<0)           {nvec=gfx.nhorz; fac= 1; coll=true;}
-    if (coll) {ang=angvec2(vel,nvec); vel=rotate(vel,fac*2*ang)*gfx.restwall;}
+    if (coll) {
+        ang=angvec2(vel,nvec);
+        vel=rotate(vel,fac*2*ang)*gfx.restwall;
+        vel=(norm(vel)+gfx.repulwall)*vdir(vel);
+    }
 }
 
 void Ufo::collufos(Ufo *othufo)
@@ -113,6 +117,7 @@ void Ufo::collflag()
         owning=true;
         enemy_flag->owned=true;
         enemy_flag->given_pos={-1,-1};
+        flag_rot={0,size};
     }
 }
 
@@ -120,7 +125,8 @@ void Ufo::detectScore()
 {
     // Detection bringing flag back to base
     if (!owning) return;
-    enemy_flag->pos=pos;
+    flag_rot = rotate(flag_rot, flag_rot_speed);
+    enemy_flag->pos=pos+flag_rot;
     if (enemy_flag->pos.x > field.x && enemy_flag->pos.x < field.y) {
         owning=false;
         enemy_flag->spawn();

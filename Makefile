@@ -1,6 +1,6 @@
 # ==== COMPILER FLAGS ==========================================================
 GNU := g++
-LFLAGS := -g -Ofast -Wall -Wextra
+LFLAGS := -g -Ofast -Wall
 RFLAGS :=
 INCLUDES := ../SFML/include
 LIBRARIES := ../SFML/lib
@@ -12,6 +12,7 @@ LINKS := sfml-graphics \
 
 # ==== PROJECT FILES ===========================================================
 NAME := AI-UFOs
+EXTENS := .exe
 PATH_SRC := ./src/
 PATH_OBJ := ./obj/
 OBJS := main \
@@ -42,9 +43,9 @@ lazy: lazy_src \
 
 # ==== SUB-PROCESS =============================================================
 lazy_src:
-	lzz src/*.lzz -sx cc -hx hh -o src
+	lzz $(PATH_SRC)*.lzz -sx cc -hx hh -o $(PATH_SRC)
 lazy_usr:
-	lzz *.AI -sx cc -hx hh -o src
+	lzz *.AI -sx cc -hx hh -o $(PATH_SRC)
 
 builder: $(OBJSF)
 	$(GNU) $(LFLAGS) -o $(NAME) $^ $(ADDF) $(LIBFLAGS) $(RFLAGS)
