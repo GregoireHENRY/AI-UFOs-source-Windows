@@ -12,7 +12,6 @@ LINKS := sfml-graphics \
 
 # ==== PROJECT FILES ===========================================================
 NAME := AI-UFOs
-EXTENS := .exe
 PATH_SRC := ./src/
 PATH_OBJ := ./obj/
 OBJS := main \
