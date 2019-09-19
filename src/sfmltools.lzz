@@ -23,6 +23,7 @@ float angvec2(sf::Vector2f v1, sf::Vector2f v2)
 
 sf::Vector2f vdir(sf::Vector2f v)
 {
+    if (v==sf::Vector2f(0,0)) return sf::Vector2f(0,0);
     return v/norm(v);
 }
 
