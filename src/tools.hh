@@ -12,6 +12,7 @@ float norm2 (float x1, float y1, float x2 = 0, float y2 = 0);
 void clip (float & v, float lower, float upper);
 template <typename T>
 std::string toString (T arg);
+char const * bool_cast (bool const b);
 template <typename T>
 std::string toString (T arg)
 {

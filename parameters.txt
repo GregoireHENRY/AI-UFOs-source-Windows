@@ -1,0 +1,5 @@
+force: false
+userteam: 0
+userflagy: 4700
+botflagy: 2100
+score: 2-6

@@ -22,3 +22,7 @@ std::string toString(T arg)
     ss << arg;
     return ss.str();
 }
+
+const char* bool_cast(const bool b) {
+    return b ? "true" : "false";
+}

@@ -2,6 +2,7 @@
 #include <SFML/OpenGL.hpp>
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "tools.hh"
 #include "sfmltools.hh"
 #include "Graphics.hh"
@@ -9,6 +10,15 @@
 #include "Flag.hh"
 #include "user.hh"
 #include "bot.hh"
+
+
+struct game_parameters
+{
+    bool force;
+    int userteam, userscore, botscore;
+    float userflagy, botflagy;
+};
+
 
 void set_countdown(sf::Text &text, float roundtime, float currtime)
 {
@@ -20,6 +30,57 @@ void set_countdown(sf::Text &text, float roundtime, float currtime)
     text.setString(countdownstr);
 }
 
+void read_parameters(game_parameters &param) {
+    std::string word;
+    std::ifstream file("parameters.txt", std::ios::in);
+    while (file >> word) {
+        std::string cat, val;
+        char endch = *word.rbegin();
+        if (endch == ':') {
+            cat = word.substr(0, word.length()-1);
+            file >> val;
+            if (cat == "force") {
+                if (val == "true") {
+                    param.force = true;
+                }
+                else {
+                    param.force = false;
+                }
+            }
+            if (cat == "userteam") {
+                param.userteam = std::stoi(val);
+            }
+            if (cat == "userflagy") {
+                param.userflagy = std::stof(val);
+            }
+            if (cat == "botflagy") {
+                param.botflagy = std::stof(val);
+            }
+        }
+    }
+    file.close();
+}
+
+void fill_parameters(game_parameters &param)
+{
+    char content[100];
+    sprintf(content,
+            "force: %s\n"
+            "userteam: %d\n"
+            "userflagy: %.0f\n"
+            "botflagy: %.0f\n"
+            "score: %d-%d",
+            bool_cast(param.force),
+            param.userteam,
+            param.userflagy,
+            param.botflagy,
+            param.userscore,
+            param.botscore);
+    std::ofstream file("parameters.txt", std::ios::trunc);
+    file << content;
+    file.close();
+}
+
 int main()
 {
     srand(time(NULL));
@@ -28,13 +89,24 @@ int main()
     Graphics gfx=Graphics();
     sf::RenderWindow window(sf::VideoMode(gfx.can.x,gfx.can.y),"Ufo",
                             sf::Style::Fullscreen,sf::ContextSettings(24,8,4,3,0));
-    // window.setFramerateLimit(gfx.fps);
+    //window.setFramerateLimit(gfx.fps);
     window.setVerticalSyncEnabled(true);
     window.setView(sf::View(sf::FloatRect(0,0,gfx.can.x,gfx.can.y)));
     window.clear(sf::Color(4,60,60));
 
+    // Read game parameters file
+    game_parameters param;
+    read_parameters(param);
+
     // Affects random side to user
-    int rng=std::rand()%2, rng2=(rng+1)%2;
+    int rng;
+    if (param.force) {
+        rng=param.userteam;
+    }
+    else {
+        rng=std::rand()%2;
+    }
+    int rng2=(rng+1)%2;
     int rngs[4]={2*rng,2*rng+1,2*rng2,2*rng2+1};
     std::string names[2]={"YOU","BOT"};
 
@@ -72,11 +144,19 @@ int main()
         bot[ii]->score=&texts[3];
     }
 
+    // Update game parameters if not pre forced
+    if (!param.force) {
+        param.userteam=rng;
+        param.userflagy=user[0]->flag->pos.y;
+        param.botflagy=bot[0]->flag->pos.y;
+    }
+
     // Main loop
-    bool gameloop=true;
+    bool gameloop=true, win;
+    float dt, roundtime=1*60, currtime=0;
+    std::string winstr;
     std::vector<float> usermotor, botmotor;
     sf::Clock clk;
-    float dt, roundtime=1*60, currtime=0;
     while (window.isOpen()) {
         dt=clk.restart().asSeconds();
         currtime+=dt;
@@ -88,7 +168,19 @@ int main()
         // ufos and capture flags
         if (gameloop) {
             if (currtime > roundtime) {
+                param.userscore=user[0]->flag->score;
+                param.botscore=bot[0]->flag->score;
+                win = param.userscore < param.botscore;
+                if (win) {
+                    winstr="GAME OVER";
+                }
+                else {
+                    winstr="VICTORY";
+                }
+                printf("%s: %d to %d\n", winstr.c_str(), param.userscore,
+                       param.botscore);
                 gameloop=false;
+                fill_parameters(param);
                 continue;
             }
             set_countdown(texts[4], roundtime, currtime);

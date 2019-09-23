@@ -11,4 +11,8 @@ void clip (float & v, float lower, float upper)
 {
     v=std::max(lower, std::min(v, upper));
 }
+char const * bool_cast (bool const b)
+                                    {
+    return b ? "true" : "false";
+}
 #undef LZZ_INLINE
